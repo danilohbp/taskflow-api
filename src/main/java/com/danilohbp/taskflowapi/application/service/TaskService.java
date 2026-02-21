@@ -1,19 +1,19 @@
 package com.danilohbp.taskflowapi.application.service;
 
-import com.danilohbp.taskflowapi.application.dto.task.CreateTaskRequest;
-import com.danilohbp.taskflowapi.application.dto.task.TaskResponse;
-import com.danilohbp.taskflowapi.application.dto.task.UpdateTaskRequest;
+import com.danilohbp.taskflowapi.application.usecase.task.CreateTaskRequest;
+import com.danilohbp.taskflowapi.application.usecase.task.TaskResponse;
+import com.danilohbp.taskflowapi.application.usecase.task.UpdateTaskRequest;
 import com.danilohbp.taskflowapi.domain.exception.BusinessRuleException;
 import com.danilohbp.taskflowapi.domain.exception.NotFoundException;
 import com.danilohbp.taskflowapi.domain.model.Task;
 import com.danilohbp.taskflowapi.domain.model.TaskPriority;
-import com.danilohbp.taskflowapi.domain.model.TaskStatus;
 import com.danilohbp.taskflowapi.domain.model.User;
-import com.danilohbp.taskflowapi.domain.repository.TaskRepository;
-import com.danilohbp.taskflowapi.domain.repository.UserRepository;
+import com.danilohbp.taskflowapi.infrastructure.persistence.jpa.TaskRepository;
+import com.danilohbp.taskflowapi.infrastructure.persistence.jpa.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -43,12 +43,7 @@ public class TaskService implements ITaskService {
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new NotFoundException("Usuário não encontrado para criar tarefa."));
 
-        Task task = new Task();
-        task.setUser(user);
-        task.setTitle(request.title());
-        task.setDescription(request.description());
-        task.setStatus(TaskStatus.ABERTO);
-        task.setPriority(TaskPriority.NIVEL_1);
+        Task task = new Task(user, request.title(), TaskPriority.LOW, LocalDateTime.now());
 
         Task saved = taskRepository.save(task);
 
@@ -72,9 +67,7 @@ public class TaskService implements ITaskService {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Tarefa não encontrada"));
 
-        applyIfPresent(request.title(), task::setTitle);
-        applyIfPresent(request.description(), task::setDescription);
-        applyIfPresent(request.status(), task::setStatus);
+        task.updateDetails(request.title(), request.description(), TaskPriority.LOW, LocalDateTime.now());
 
         Task saved = taskRepository.save(task);
         return toResponse(saved);
@@ -97,7 +90,7 @@ public class TaskService implements ITaskService {
     private TaskResponse toResponse(Task task) {
         return new TaskResponse(
             task.getId(),
-            task.getUser().getId(),
+            task.getAssignee().getId(),
             task.getTitle(),
             task.getDescription(),
             task.getStatus()

@@ -1,11 +1,11 @@
 package com.danilohbp.taskflowapi.application.service;
 
-import com.danilohbp.taskflowapi.application.dto.user.CreateUserRequest;
-import com.danilohbp.taskflowapi.application.dto.user.UserResponse;
+import com.danilohbp.taskflowapi.application.usecase.user.CreateUserRequest;
+import com.danilohbp.taskflowapi.application.usecase.user.UserResponse;
 import com.danilohbp.taskflowapi.domain.exception.BusinessRuleException;
 import com.danilohbp.taskflowapi.domain.exception.NotFoundException;
 import com.danilohbp.taskflowapi.domain.model.User;
-import com.danilohbp.taskflowapi.domain.repository.UserRepository;
+import com.danilohbp.taskflowapi.infrastructure.persistence.jpa.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,10 +27,7 @@ public class UserService implements IUserService {
             throw new BusinessRuleException("E-mail já cadastrado.");
         }
 
-        User user = new User();
-        user.setName(request.name());
-        user.setEmail(request.email());
-
+        User user = new User(request.name(), request.email(), null);
         User saved = repository.save(user);
 
         return new UserResponse(saved.getId(), saved.getName(), saved.getEmail());

@@ -1,4 +1,4 @@
-package com.danilohbp.taskflowapi.domain.repository;
+package com.danilohbp.taskflowapi.infrastructure.persistence.jpa;
 
 import com.danilohbp.taskflowapi.domain.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;

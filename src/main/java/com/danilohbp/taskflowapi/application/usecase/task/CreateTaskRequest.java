@@ -1,4 +1,4 @@
-package com.danilohbp.taskflowapi.application.dto.task;
+package com.danilohbp.taskflowapi.application.usecase.task;
 
 public record CreateTaskRequest(
     Long userId,

@@ -1,8 +1,8 @@
 package com.danilohbp.taskflowapi.application.service;
 
-import com.danilohbp.taskflowapi.application.dto.task.CreateTaskRequest;
-import com.danilohbp.taskflowapi.application.dto.task.TaskResponse;
-import com.danilohbp.taskflowapi.application.dto.task.UpdateTaskRequest;
+import com.danilohbp.taskflowapi.application.usecase.task.CreateTaskRequest;
+import com.danilohbp.taskflowapi.application.usecase.task.TaskResponse;
+import com.danilohbp.taskflowapi.application.usecase.task.UpdateTaskRequest;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.danilohbp.taskflowapi.application.dto.user;
+package com.danilohbp.taskflowapi.application.usecase.user;
 
 import com.danilohbp.taskflowapi.domain.model.TaskStatus;
 

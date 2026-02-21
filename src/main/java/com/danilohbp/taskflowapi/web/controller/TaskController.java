@@ -1,46 +1,75 @@
 package com.danilohbp.taskflowapi.web.controller;
 
-import com.danilohbp.taskflowapi.application.dto.task.CreateTaskRequest;
-import com.danilohbp.taskflowapi.application.dto.task.TaskResponse;
-import com.danilohbp.taskflowapi.application.dto.task.UpdateTaskRequest;
-import com.danilohbp.taskflowapi.application.service.TaskService;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
+import com.danilohbp.taskflowapi.application.usecase.task.assign.AssignTaskUseCase;
+import com.danilohbp.taskflowapi.application.usecase.task.cancel.CancelTaskUseCase;
+import com.danilohbp.taskflowapi.application.usecase.task.complete.CompleteTaskUseCase;
+import com.danilohbp.taskflowapi.application.usecase.task.create.CreateTaskUseCase;
+import com.danilohbp.taskflowapi.application.usecase.task.start.StartTaskUseCase;
+import com.danilohbp.taskflowapi.web.mapper.TaskWebMapper;
+import com.danilohbp.taskflowapi.web.request.task.AssignTaskRequest;
+import com.danilohbp.taskflowapi.web.request.task.CancelTaskRequest;
+import com.danilohbp.taskflowapi.web.request.task.CompleteTaskRequest;
+import com.danilohbp.taskflowapi.web.request.task.CreateTaskRequest;
+import com.danilohbp.taskflowapi.web.request.task.StartTaskRequest;
+import com.danilohbp.taskflowapi.web.response.task.TaskCreatedResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/tasks")
 public class TaskController {
 
-    private final TaskService taskService;
+    private final CreateTaskUseCase createTaskUseCase;
+    private final AssignTaskUseCase assignTaskUseCase;
+    private final StartTaskUseCase startTaskUseCase;
+    private final CompleteTaskUseCase completeTaskUseCase;
+    private final CancelTaskUseCase cancelTaskUseCase;
 
-    public TaskController(TaskService taskService) {
-        this.taskService = taskService;
+    private final TaskWebMapper mapper;
+
+    public TaskController(
+            CreateTaskUseCase createTaskUseCase,
+            AssignTaskUseCase assignTaskUseCase,
+            StartTaskUseCase startTaskUseCase,
+            CompleteTaskUseCase completeTaskUseCase,
+            CancelTaskUseCase cancelTaskUseCase,
+            TaskWebMapper mapper
+    ) {
+        this.createTaskUseCase = createTaskUseCase;
+        this.assignTaskUseCase = assignTaskUseCase;
+        this.startTaskUseCase = startTaskUseCase;
+        this.completeTaskUseCase = completeTaskUseCase;
+        this.cancelTaskUseCase = cancelTaskUseCase;
+        this.mapper = mapper;
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public TaskResponse create(@Valid @RequestBody CreateTaskRequest request) {
-        return taskService.create(request);
+    public ResponseEntity<TaskCreatedResponse> create(@RequestBody CreateTaskRequest request) {
+        var result = createTaskUseCase.execute(mapper.toCreateCommand(request));
+        return ResponseEntity.ok(mapper.toCreatedResponse(result));
     }
 
-    @GetMapping("/{id}")
-    public TaskResponse get(@PathVariable Long id) {
-        return taskService.getById(id);
+    @PostMapping("/{taskId}/assign")
+    public ResponseEntity<Void> assign(@PathVariable Long taskId, @RequestBody AssignTaskRequest request) {
+        assignTaskUseCase.execute(mapper.toAssignCommand(taskId, request));
+        return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id}")
-    public TaskResponse updateById(
-        @PathVariable Long id,
-        @RequestBody @Valid UpdateTaskRequest request
-    ) {
-        return taskService.updateById(id, request);
+    @PostMapping("/{taskId}/start")
+    public ResponseEntity<Void> start(@PathVariable Long taskId, @RequestBody StartTaskRequest request) {
+        startTaskUseCase.execute(mapper.toStartCommand(taskId, request));
+        return ResponseEntity.noContent().build();
     }
 
-    @GetMapping
-    public List<TaskResponse> list() {
-        return taskService.listAll();
+    @PostMapping("/{taskId}/complete")
+    public ResponseEntity<Void> complete(@PathVariable Long taskId, @RequestBody CompleteTaskRequest request) {
+        completeTaskUseCase.execute(mapper.toCompleteCommand(taskId, request));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{taskId}/cancel")
+    public ResponseEntity<Void> cancel(@PathVariable Long taskId, @RequestBody CancelTaskRequest request) {
+        cancelTaskUseCase.execute(mapper.toCancelCommand(taskId, request));
+        return ResponseEntity.noContent().build();
     }
 }

@@ -1,8 +1,12 @@
 package com.danilohbp.taskflowapi.web.controller;
 
-import com.danilohbp.taskflowapi.application.dto.user.CreateUserRequest;
-import com.danilohbp.taskflowapi.application.dto.user.UserResponse;
-import com.danilohbp.taskflowapi.application.service.UserService;
+import com.danilohbp.taskflowapi.application.usecase.user.create.CreateUserUseCase;
+import com.danilohbp.taskflowapi.domain.exception.NotFoundException;
+import com.danilohbp.taskflowapi.infrastructure.persistence.query.UserQueryRepository;
+import com.danilohbp.taskflowapi.web.mapper.UserWebMapper;
+import com.danilohbp.taskflowapi.web.request.user.CreateUserRequest;
+import com.danilohbp.taskflowapi.web.response.user.UserCreatedResponse;
+import com.danilohbp.taskflowapi.web.response.user.UserResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -13,25 +17,42 @@ import java.util.List;
 @RequestMapping("/api/users")
 public class UserController {
 
-    private final UserService service;
+    private final CreateUserUseCase createUserUseCase;
+    private final UserQueryRepository userQueryRepository;
+    private final UserWebMapper mapper;
 
-    public UserController(UserService service) {
-        this.service = service;
+    public UserController(
+            CreateUserUseCase createUserUseCase,
+            UserQueryRepository userQueryRepository,
+            UserWebMapper mapper
+    ) {
+        this.createUserUseCase = createUserUseCase;
+        this.userQueryRepository = userQueryRepository;
+        this.mapper = mapper;
     }
 
+    // WRITE
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse create(@Valid @RequestBody CreateUserRequest request) {
-        return service.create(request);
+    public UserCreatedResponse create(@Valid @RequestBody CreateUserRequest request) {
+        var result = createUserUseCase.execute(mapper.toCreateCommand(request));
+        return new UserCreatedResponse(result.userId());
     }
 
+    // READ
     @GetMapping
     public List<UserResponse> list() {
-        return service.listAll();
+        return userQueryRepository.listUsers()
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 
+    // READ
     @GetMapping("/{id}")
     public UserResponse get(@PathVariable Long id) {
-        return service.getById(id);
+        var view = userQueryRepository.findUserById(id)
+                .orElseThrow(() -> new NotFoundException("User not found: " + id));
+        return mapper.toResponse(view);
     }
 }

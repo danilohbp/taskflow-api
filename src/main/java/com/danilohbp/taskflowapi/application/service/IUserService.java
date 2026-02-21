@@ -1,7 +1,7 @@
 package com.danilohbp.taskflowapi.application.service;
 
-import com.danilohbp.taskflowapi.application.dto.user.CreateUserRequest;
-import com.danilohbp.taskflowapi.application.dto.user.UserResponse;
+import com.danilohbp.taskflowapi.application.usecase.user.CreateUserRequest;
+import com.danilohbp.taskflowapi.application.usecase.user.UserResponse;
 
 import java.util.List;
 

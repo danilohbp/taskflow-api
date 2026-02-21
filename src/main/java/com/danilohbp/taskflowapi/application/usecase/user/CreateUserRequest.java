@@ -1,4 +1,4 @@
-package com.danilohbp.taskflowapi.application.dto.user;
+package com.danilohbp.taskflowapi.application.usecase.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
