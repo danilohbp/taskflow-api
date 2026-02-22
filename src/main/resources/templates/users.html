@@ -1,42 +1,171 @@
 <!doctype html>
-<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8" />
-    <title>Users - Taskflow</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 24px; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background: #f5f5f5; }
-        .top { display:flex; gap:12px; align-items:center; margin-bottom: 16px; }
-        a { text-decoration:none; }
-    </style>
-</head>
-<body>
-<div class="top">
-    <h2 style="margin:0;">Usuários</h2>
-    <a href="/tasks">Ver Tasks</a>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+        ${'Users • Taskflow'},
+        ${'users'},
+        ~{::content},
+        ~{::scripts}
+      )}">
+
+<div th:fragment="content">
+
+    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-3">
+        <div>
+            <h1 class="h4 mb-1">Usuários</h1>
+            <div class="muted">Lista de usuários cadastrados (nome, e-mail, role e status).</div>
+        </div>
+
+        <div class="input-group" style="max-width: 420px;">
+            <span class="input-group-text">🔎</span>
+            <input id="userSearch" type="text" class="form-control" placeholder="Buscar por nome ou e-mail">
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-md-4">
+            <div class="card shadow-soft">
+                <div class="card-body">
+                    <div class="muted">Total</div>
+                    <div class="h3 mb-0" th:text="${users != null ? #lists.size(users) : 0}">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-8">
+            <div class="card shadow-soft">
+                <div class="card-body">
+                    <div class="muted">Ações</div>
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+                        <a class="btn btn-primary" th:href="@{/swagger-ui/index.html}">
+                            <i class="fa-solid fa-book me-1"></i> Abrir Swagger
+                        </a>
+                        <a class="btn btn-outline-secondary" th:href="@{/tasks}">
+                            <i class="fa-solid fa-list-check me-1"></i> Ver Tasks
+                        </a>
+                    </div>
+                    <div class="muted small mt-2">Create/Update/Activate/Deactivate via API.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${users == null or #lists.isEmpty(users)}" class="card shadow-soft">
+        <div class="card-body text-center py-5">
+            <div class="display-6 mb-2">👤</div>
+            <div class="h5 mb-1">Nenhum usuário cadastrado</div>
+            <div class="muted mb-3">Crie usuários via API e eles aparecerão aqui.</div>
+            <a class="btn btn-primary" th:href="@{/swagger-ui/index.html}">
+                <i class="fa-solid fa-book me-1"></i> Abrir Swagger
+            </a>
+        </div>
+    </div>
+
+    <div th:if="${users != null and !#lists.isEmpty(users)}" class="card shadow-soft border-0">
+
+        <div class="card-header bg-white border-0 pt-4 pb-3 d-flex align-items-center justify-content-between">
+            <div>
+                <div class="fw-semibold fs-6">Usuários cadastrados</div>
+                <div class="muted small">Gerenciamento de acesso e permissões</div>
+            </div>
+            <span class="badge bg-light text-dark border">
+            <i class="fa-solid fa-users me-1"></i>
+            <span th:text="${#lists.size(users)}">0</span>
+        </span>
+        </div>
+
+        <div class="table-responsive px-3 pb-3">
+            <table class="table align-middle table-borderless mb-0" id="usersTable">
+
+                <thead class="border-bottom">
+                <tr class="text-muted small text-uppercase">
+                    <th style="width:90px;">ID</th>
+                    <th>Usuário</th>
+                    <th>E-mail</th>
+                    <th style="width:140px;">Role</th>
+                    <th style="width:130px;">Status</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="u : ${users}" class="border-bottom users-row">
+
+                    <!-- ID -->
+                    <td>
+                    <span class="badge bg-light text-dark border px-3 py-2 fw-semibold"
+                          th:text="${u.id()}">1</span>
+                    </td>
+
+                    <!-- Nome + Avatar -->
+                    <td>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                                 style="width:36px;height:36px;font-size:14px;">
+                                <span th:text="${#strings.substring(u.name(),0,1)}">U</span>
+                            </div>
+                            <div>
+                                <div class="fw-semibold" th:text="${u.name()}">Nome</div>
+                                <div class="muted small">ID: <span th:text="${u.id()}"></span></div>
+                            </div>
+                        </div>
+                    </td>
+
+                    <!-- Email -->
+                    <td>
+                        <a th:href="'mailto:' + ${u.email()}"
+                           th:text="${u.email()}"
+                           class="text-decoration-none text-primary fw-medium"></a>
+                    </td>
+
+                    <!-- Role -->
+                    <td>
+                    <span class="badge px-3 py-2"
+                          th:text="${u.role()}"
+                          th:classappend="${
+                             u.role().name() == 'ADMIN' ? ' bg-dark text-white' :
+                             ' bg-light text-dark border'
+                          }">
+                        USER
+                    </span>
+                    </td>
+
+                    <!-- Status -->
+                    <td>
+                    <span class="badge px-3 py-2 rounded-pill fw-medium"
+                          th:text="${u.active()} ? 'Ativo' : 'Inativo'"
+                          th:classappend="${u.active()} ?
+                          ' bg-success-subtle text-success border border-success-subtle' :
+                          ' bg-secondary-subtle text-secondary border border-secondary-subtle'">
+                        Ativo
+                    </span>
+                    </td>
+
+                </tr>
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
 </div>
 
-<div th:if="${#lists.isEmpty(users)}">
-    <p>Nenhum usuário cadastrado.</p>
+<div th:fragment="scripts">
+    <script>
+        const input = document.getElementById('userSearch');
+        const table = document.getElementById('usersTable');
+
+        if (input && table) {
+            input.addEventListener('input', () => {
+                const q = input.value.toLowerCase().trim();
+                const rows = table.querySelectorAll('tbody tr');
+
+                rows.forEach(tr => {
+                    const text = tr.innerText.toLowerCase();
+                    tr.style.display = text.includes(q) ? '' : 'none';
+                });
+            });
+        }
+    </script>
 </div>
 
-<table th:if="${!#lists.isEmpty(users)}">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Nome</th>
-        <th>Email</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="u : ${users}">
-        <td th:text="${u.id()}"></td>
-        <td th:text="${u.name()}"></td>
-        <td th:text="${u.email()}"></td>
-    </tr>
-    </tbody>
-</table>
-</body>
 </html>

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<nav th:fragment="navbar(active)"
+     class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container page-wrap">
+
+        <a class="navbar-brand fw-semibold d-flex align-items-center gap-2" th:href="@{/}">
+            <i class="fa-solid fa-layer-group"></i>
+            <span>Taskflow</span>
+        </a>
+
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse" data-bs-target="#tfNav"
+                aria-controls="tfNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div id="tfNav" class="collapse navbar-collapse">
+            <div class="navbar-nav me-auto gap-1">
+
+                <a class="nav-link"
+                   th:href="@{/tasks}"
+                   th:classappend="${active} == 'tasks' ? ' active' : ''"
+                   sec:authorize="isAuthenticated()">
+                    <i class="fa-solid fa-list-check me-1"></i> Tasks
+                </a>
+
+                <a class="nav-link"
+                   th:href="@{/users}"
+                   th:classappend="${active} == 'users' ? ' active' : ''"
+                   sec:authorize="hasRole('ADMIN')">
+                    <i class="fa-solid fa-users me-1"></i> Users
+                </a>
+
+                <a class="nav-link"
+                   th:href="@{/swagger-ui/index.html}"
+                   sec:authorize="hasRole('ADMIN')">
+                    <i class="fa-solid fa-book me-1"></i> Swagger
+                </a>
+
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+
+                <span class="text-white-50 small"
+                      sec:authorize="isAuthenticated()">
+                    <i class="fa-solid fa-circle-user me-1"></i>
+                    <span sec:authentication="name">user</span>
+                </span>
+
+                <a class="btn btn-sm btn-outline-light"
+                   th:href="@{/login}"
+                   sec:authorize="isAnonymous()">
+                    Entrar
+                </a>
+
+                <form th:action="@{/logout}" method="post"
+                      sec:authorize="isAuthenticated()" class="m-0">
+                    <button type="submit" class="btn btn-sm btn-light">
+                        <i class="fa-solid fa-right-from-bracket me-1"></i>
+                        Sair
+                    </button>
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</nav>
+</body>
+</html>

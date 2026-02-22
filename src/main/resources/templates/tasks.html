@@ -1,46 +1,165 @@
 <!doctype html>
-<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8" />
-    <title>Tasks - Taskflow</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 24px; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background: #f5f5f5; }
-        .top { display:flex; gap:12px; align-items:center; margin-bottom: 16px; }
-    </style>
-</head>
-<body>
-<div class="top">
-    <h2 style="margin:0;">Tasks</h2>
-    <a href="/users">Ver Users</a>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+        ${'Tasks • Taskflow'},
+        ${'tasks'},
+        ~{::content},
+        ~{::scripts}
+      )}">
+
+<div th:fragment="content">
+
+    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-3">
+        <div>
+            <h1 class="h4 mb-1">Tasks</h1>
+            <div class="muted">Lista geral de tasks com status, prioridade, responsáveis e prazo.</div>
+        </div>
+
+        <div class="d-flex gap-2" style="min-width: 280px;">
+            <div class="input-group">
+                <span class="input-group-text">🔎</span>
+                <input id="taskSearch" type="text" class="form-control"
+                       placeholder="Buscar por título, status, assignee...">
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de resumo (sem Swagger) -->
+    <div class="row g-3 mb-3">
+
+        <!-- Total -->
+        <div class="col-12 col-md-4">
+            <div class="card shadow-soft h-100">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="muted mb-1">Total de tasks</div>
+                        <div class="h3 mb-0" th:text="${tasks != null ? #lists.size(tasks) : 0}">0</div>
+                        <div class="muted small mt-1">Visão geral do backlog</div>
+                    </div>
+                    <div class="fs-2 text-secondary">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Busca / filtro -->
+        <div class="col-12 col-md-4">
+            <div class="card shadow-soft h-100">
+                <div class="card-body">
+                    <div class="muted mb-1">Filtro rápido</div>
+                    <div class="fw-semibold">Digite na busca acima</div>
+                    <div class="muted small mt-2">
+                        Você pode filtrar por <span class="fw-semibold">título</span>,
+                        <span class="fw-semibold">status</span>,
+                        <span class="fw-semibold">prioridade</span>,
+                        <span class="fw-semibold">assignee</span> ou <span class="fw-semibold">reporter</span>.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ordenação / dica -->
+        <div class="col-12 col-md-4">
+            <div class="card shadow-soft h-100">
+                <div class="card-body">
+                    <div class="muted mb-1">Ordenação padrão</div>
+                    <div class="fw-semibold">updatedAt desc</div>
+                    <div class="muted small mt-2">
+                        As tasks mais recentes aparecem primeiro (conforme <span class="fw-semibold">TaskQueryRepository</span>).
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Empty state -->
+    <div th:if="${tasks == null or #lists.isEmpty(tasks)}" class="card shadow-soft">
+        <div class="card-body text-center py-5">
+            <div class="display-6 mb-2">🗂️</div>
+            <div class="h5 mb-1">Nenhuma task cadastrada</div>
+            <div class="muted mb-0">
+                Crie tasks via API e elas aparecerão aqui.
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela -->
+    <div th:if="${tasks != null and !#lists.isEmpty(tasks)}" class="card shadow-soft">
+        <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div class="fw-semibold">Tabela de Tasks</div>
+            <div class="muted small">Filtro funciona no navegador</div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="tasksTable">
+                <thead class="table-light">
+                <tr>
+                    <th style="width:80px;">ID</th>
+                    <th>Título</th>
+                    <th style="width:140px;">Status</th>
+                    <th style="width:140px;">Prioridade</th>
+                    <th style="width:160px;">Due date</th>
+                    <th style="width:180px;">Assignee</th>
+                    <th style="width:180px;">Reporter</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="t : ${tasks}">
+                    <td class="fw-semibold" th:text="${t.id()}">1</td>
+
+                    <td>
+                        <div class="fw-semibold" th:text="${t.title()}">Título</div>
+                    </td>
+
+                    <td>
+                      <span class="badge"
+                            th:text="${t.status()}"
+                            th:classappend="${
+                              t.status().name() == 'OPEN' ? ' text-bg-secondary' :
+                              (t.status().name() == 'IN_PROGRESS' ? ' text-bg-primary' :
+                              (t.status().name() == 'COMPLETED' ? ' text-bg-success' :
+                              (t.status().name() == 'CANCELLED' ? ' text-bg-danger' : ' badge-soft')))
+                            }">
+                        STATUS
+                      </span>
+                    </td>
+
+                    <td>
+                        <span class="badge badge-soft" th:text="${t.priority()}">PRIORITY</span>
+                    </td>
+
+                    <td class="muted" th:text="${t.dueDate()} ?: '-'">-</td>
+
+                    <td th:text="${t.assigneeName()} ?: '—'">—</td>
+                    <td th:text="${t.reporterName()} ?: '—'">—</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
 
-<div th:if="${#lists.isEmpty(tasks)}">
-    <p>Nenhuma task cadastrada.</p>
+<div th:fragment="scripts">
+    <script>
+        const input = document.getElementById('taskSearch');
+        const table = document.getElementById('tasksTable');
+
+        if (input && table) {
+            input.addEventListener('input', () => {
+                const q = input.value.toLowerCase().trim();
+                const rows = table.querySelectorAll('tbody tr');
+
+                rows.forEach(tr => {
+                    const text = tr.innerText.toLowerCase();
+                    tr.style.display = text.includes(q) ? '' : 'none';
+                });
+            });
+        }
+    </script>
 </div>
 
-<table th:if="${!#lists.isEmpty(tasks)}">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>UserId</th>
-        <th>Título</th>
-        <th>Status</th>
-    </tr>
-    </thead>
-    <tbody>
-        <tr th:each="t : ${tasks}">
-            <td th:text="${t.id()}"></td>
-            <td th:text="${t.title()}"></td>
-            <td th:text="${t.status()}"></td>
-            <td th:text="${t.priority()}"></td>
-            <td th:text="${t.dueDate()} ?: '-'"></td>
-            <td th:text="${t.assigneeName()} ?: '—'"></td>
-            <td th:text="${t.reporterName()}"></td>
-        </tr>
-    </tbody>
-</table>
-</body>
 </html>

@@ -1,4 +1,7 @@
 package com.danilohbp.taskflowapi.application.usecase.user.activate;
 
-public record ActivateUserCommand() {
-}
+import jakarta.validation.constraints.NotNull;
+
+public record ActivateUserCommand(
+        @NotNull Long userId
+) {}

@@ -1,4 +1,7 @@
 package com.danilohbp.taskflowapi.application.usecase.user.deactivate;
 
-public record DeactivateUserCommand() {
-}
+import jakarta.validation.constraints.NotNull;
+
+public record DeactivateUserCommand(
+        @NotNull Long userId
+) {}

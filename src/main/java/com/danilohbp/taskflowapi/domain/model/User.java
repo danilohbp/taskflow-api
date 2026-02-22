@@ -26,6 +26,9 @@ public class User {
     private UserRole role;
 
     @Column(nullable = false)
+    private String passwordHash;
+
+    @Column(nullable = false)
     private boolean active;
 
     @Column(nullable = false)
@@ -36,9 +39,10 @@ public class User {
 
     protected User() { }
 
-    public User(String name, String email, UserRole role) {
+    public User(String name, String email, String passwordHash, UserRole role) {
         this.name = normalizeName(name);
         this.email = normalizeEmail(email);
+        this.passwordHash = passwordHash;
         this.role = role == null ? UserRole.USER : role;
         this.active = true;
     }

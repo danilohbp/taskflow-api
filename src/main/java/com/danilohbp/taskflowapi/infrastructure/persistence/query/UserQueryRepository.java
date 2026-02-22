@@ -15,6 +15,7 @@ public interface UserQueryRepository extends Repository<User, Long> {
             u.id, u.name, u.email, u.role, u.active, u.createdAt, u.updatedAt
         )
         from User u
+        where u.role <> 'ADMIN'
         order by u.name asc
     """)
     List<UserView> listUsers();

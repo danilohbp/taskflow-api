@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="layout(pageTitle, activeNav, content, scripts)">
+
+<head th:replace="~{layout/fragments/head :: head(${pageTitle})}"></head>
+
+<body>
+
+<div th:replace="~{layout/fragments/navbar :: navbar(${activeNav})}"></div>
+
+<main class="container page-wrap py-4">
+    <div th:replace="${content}"></div>
+</main>
+
+<div th:if="${scripts != null}" th:replace="${scripts}"></div>
+
+</body>
+</html>

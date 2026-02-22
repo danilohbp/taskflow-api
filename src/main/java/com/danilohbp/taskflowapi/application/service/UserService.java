@@ -27,7 +27,7 @@ public class UserService implements IUserService {
             throw new BusinessRuleException("E-mail já cadastrado.");
         }
 
-        User user = new User(request.name(), request.email(), null);
+        User user = new User(request.name(), request.email(), null, null);
         User saved = repository.save(user);
 
         return new UserResponse(saved.getId(), saved.getName(), saved.getEmail());
